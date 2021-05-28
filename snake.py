@@ -1,4 +1,5 @@
-import pygame, random
+import pygame
+import random
 from pygame.locals import *
 
 
@@ -6,7 +7,7 @@ from pygame.locals import *
 def on_grid_random():
     x = random.randint(0, 59)
     y = random.randint(0, 59)
-    return (x * 10, y * 10)
+    return x * 10, y * 10
 
 
 def collision(c1, c2):
@@ -27,9 +28,16 @@ snake = [(200, 200), (210, 200), (220, 200)]
 snake_skin = pygame.Surface((10, 10))
 snake_skin.fill((255, 255, 255))  # White
 
+# Draw the apple
 apple_pos = on_grid_random()
 apple = pygame.Surface((10, 10))
 apple.fill((255, 0, 0))
+
+# Draw the mouse
+mouse_pos = on_grid_random()
+mouse = pygame.Surface((10, 10))
+mouse.fill((255, 255, 255))
+mouse_event = 0
 
 my_direction = LEFT
 
@@ -56,10 +64,18 @@ while not game_over:
             if event.key == K_RIGHT and my_direction != LEFT:
                 my_direction = RIGHT
 
+    if collision(snake[0], mouse_pos):
+        mouse_event = random.choice(range(1, 5))
+        snake.append((0, 0))
+        score = score + 5
+        mouse_pos = on_grid_random()
+        apple_pos = on_grid_random()
+
     if collision(snake[0], apple_pos):
         apple_pos = on_grid_random()
         snake.append((0, 0))
         score = score + 1
+        mouse_event = random.choice(range(1, 5))
 
     # Check if snake collided with boundaries
     if snake[0][0] == 600 or snake[0][1] == 600 or snake[0][0] < 0 or snake[0][1] < 0:
@@ -90,20 +106,21 @@ while not game_over:
 
     screen.fill((0, 0, 0))
     screen.blit(apple, apple_pos)
+    if mouse_event == 2:
+        screen.blit(mouse, mouse_pos)
 
     for x in range(0, 600, 10):  # Draw vertical lines
         pygame.draw.line(screen, (40, 40, 40), (x, 0), (x, 600))
     for y in range(0, 600, 10):  # Draw vertical lines
         pygame.draw.line(screen, (40, 40, 40), (0, y), (600, y))
 
-    score_font = font.render('Score: %s' % (score), True, (255, 255, 255))
+    score_font = font.render('Score: %s' % score, True, (255, 255, 255))
     score_rect = score_font.get_rect()
     score_rect.topleft = (600 - 120, 10)
     screen.blit(score_font, score_rect)
 
     for pos in snake:
         screen.blit(snake_skin, pos)
-
     pygame.display.update()
 
 while True:
